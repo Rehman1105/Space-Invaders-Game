@@ -9,47 +9,43 @@ function loadAsset(src) {
 }
 
 async function renderGameScreen() {
-
   try {
-
     const canvas = document.getElementById("myCanvas");
     const ctx = canvas.getContext("2d");
 
-    // load images
-    const heroImg = await loadAsset("player.png");
-    const enemyImg = await loadAsset("enemyShip.png");
-
-    // draw black background
+    // Draw black background 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // draw hero ship
-    ctx.drawImage(
-      heroImg,
-      canvas.width / 2 - 45,
-      canvas.height - canvas.height / 4,
-      90,
-      90
-    );
+    // Load game textures
+    const heroImg = await loadAsset("player.png");
+    const enemyImg = await loadAsset("enemyShip.png");
 
-    // enemy formation constants
+    // Draw hero ship
+    const HERO_WIDTH = 90;
+    const HERO_HEIGHT = 90;
+    const heroX = canvas.width / 2 - HERO_WIDTH / 2;
+    const heroY = canvas.height - canvas.height / 4;
+
+    ctx.drawImage(heroImg, heroX, heroY, HERO_WIDTH, HERO_HEIGHT);
+
+    // Draw 5×5 enemy formation
     const ENEMY_TOTAL = 5;
+    const ENEMY_SIZE = 50;
     const ENEMY_SPACING = 98;
+
     const FORMATION_WIDTH = ENEMY_TOTAL * ENEMY_SPACING;
     const START_X = (canvas.width - FORMATION_WIDTH) / 2;
     const STOP_X = START_X + FORMATION_WIDTH;
 
-    // draw enemies
     for (let x = START_X; x < STOP_X; x += ENEMY_SPACING) {
-      for (let y = 0; y < 50 * 5; y += 50) {
-        ctx.drawImage(enemyImg, x, y, 50, 50);
+      for (let y = 0; y < ENEMY_SIZE * ENEMY_TOTAL; y += ENEMY_SIZE) {
+        ctx.drawImage(enemyImg, x, y, ENEMY_SIZE, ENEMY_SIZE);
       }
     }
-
   } catch (error) {
     console.error("Error loading assets:", error);
   }
-
 }
 
 renderGameScreen();
