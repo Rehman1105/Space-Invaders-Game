@@ -33,6 +33,8 @@ class Hero extends GameObject {
     this.type = "Hero";
     this.speed = { x: 0, y: 0 };  // speed as object now
     this.cooldown = 0;  // firing cooldown
+    this.life = 3; // 3 lives
+    this.points = 0; // start with 0 points
   }
 
   // Fire method
@@ -44,6 +46,19 @@ class Hero extends GameObject {
   // Check if hero can fire
   canFire() {
     return this.cooldown === 0;
+  }
+
+  // decrease life
+  decrementLife() {
+  this.life--;
+  if (this.life === 0) {
+    this.dead = true;
+    }
+  }
+
+  // increase life
+  incrementPoints() {
+    this.points += 100;
   }
 }
 
@@ -132,7 +147,8 @@ let heroImg,
     canvas, 
     ctx, 
     gameObjects = [], 
-    hero, 
+    hero,
+    lifeImg, 
     eventEmitter = new EventEmitter();
 
 
@@ -250,11 +266,13 @@ function initGame() {
   eventEmitter.on(Messages.COLLISION_ENEMY_LASER, (_, { first, second }) => {
     first.dead = true;
     second.dead = true;
+    hero.incrementPoints(); // increment points when laser hits enemy
   });
 
   // enemy-hero collision
   eventEmitter.on(Messages.COLLISION_ENEMY_HERO, (_, { enemy }) => {
     enemy.dead = true;
+    hero.decrementLife(); // decrease life when player is hit
   });
 }
 
@@ -286,6 +304,30 @@ function updateGameObjects() {
   gameObjects = gameObjects.filter(go => !go.dead);
 }
 
+// Draw life icons on screen
+function drawLife() {
+  const START_POS = canvas.width - 180;
+  for(let i=0; i < hero.life; i++ ) {
+    ctx.drawImage(
+      lifeImg, 
+      START_POS + (45 * (i+1) ), 
+      canvas.height - 37);
+  }
+}
+
+// Draw points on screen
+function drawPoints() {
+  ctx.font = "30px Arial";
+  ctx.fillStyle = "red";
+  ctx.textAlign = "left";
+  drawText("Points: " + hero.points, 10, canvas.height - 20);
+}
+
+// Helper function to draw text
+function drawText(message, x, y) {
+  ctx.fillText(message, x, y);
+}
+
 // replaced renderGameScreen(); with this, which loads images into global variables 
 // called initGame() instead of creating objects manually
 // sets up a game loop with setInterval() which runs every 100ms
@@ -298,6 +340,7 @@ window.onload = async () => {
   heroImg = await loadAsset("player.png");
   enemyImg = await loadAsset("enemyShip.png");
   laserImg = await loadAsset("laserRed.png");
+  lifeImg = await loadAsset("life.png");
 
   initGame();
   
@@ -314,5 +357,8 @@ window.onload = async () => {
     }
 
     drawGameObjects(ctx);
+
+    drawPoints();
+    drawLife();
   }, 100);
 };
